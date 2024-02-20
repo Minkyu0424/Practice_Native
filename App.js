@@ -10,8 +10,7 @@ import {
 } from "react-native";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 // const API_KEY = process.env.REACT_APP_WEATHER_KEY;
-
-const API_KEY = "9f3f1976fc721cbf0acf60f5608efe89";
+import { API_KEY } from '@env';
 
 export default function App() {
   const [city, setCity] = useState("...Loading");
