@@ -7,6 +7,7 @@ import {
   TextInput,
   ScrollView,
   Alert,
+  Modal,
 } from "react-native";
 import { theme } from "./color";
 import { useEffect, useState } from "react";
@@ -20,13 +21,20 @@ export default function Todo() {
   const [working, setWorking] = useState(true);
   const [text, setText] = useState("");
   const [toDos, setToDos] = useState({});
+  const [editText, setEditText] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const travel = () => setWorking(false);
   const work = () => setWorking(true);
   const onChangeText = (e) => setText(e);
+  const onChangeEditText = (e) => setEditText(e);
 
   useEffect(() => {
-    loadToDos();
+    setIsLoading(true);
+    loadToDos().then(() => {
+      setIsLoading(false);
+    });
     loadHeader();
   }, []);
 
@@ -53,6 +61,11 @@ export default function Todo() {
     return s != null ? setToDos(JSON.parse(s)) : null;
   };
 
+  const openEdit = (prevToDos) => {
+    setIsEditing(true);
+    setEditText(prevToDos);
+  };
+
   const checkToDo = async (id) => {
     const isChecked = toDos[id].checked === "false" ? "true" : "false";
     const checkedToDos = {
@@ -71,16 +84,25 @@ export default function Todo() {
         onPress: () => {
           const newToDos = { ...toDos };
           delete newToDos[id];
-          setToDos({ newToDos });
+          setToDos(newToDos);
           saveToDos(newToDos);
         },
       },
     ]);
   };
-  console.log(toDos);
+
+  const editToDos = async (id) => {
+    const editedToDos = {
+      ...toDos,
+      [id]: { ...toDos[id], text: editText },
+    };
+    setToDos(editedToDos);
+    saveToDos(editedToDos);
+    setIsEditing(false);
+  };
 
   const addToDo = async () => {
-    if (text === "")  return;
+    if (text === "") return;
     const newToDos = {
       ...toDos,
       [Date.now()]: { text, working, checked: "false" },
@@ -89,8 +111,12 @@ export default function Todo() {
     await saveToDos(newToDos);
     setText("");
   };
-  
-  return (
+
+  return isLoading ? (
+    <View>
+      <Text>로딩중이야</Text>
+    </View>
+  ) : (
     <View style={styles.container}>
       <StatusBar style="auto" />
       <View style={styles.header}>
@@ -119,7 +145,11 @@ export default function Todo() {
       <ScrollView>
         {Object.keys(toDos).map((key) =>
           toDos[key].working === working ? (
-            <View style={styles.toDo} key={key}>
+            <TouchableOpacity
+              style={styles.toDo}
+              key={key}
+              onPress={() => openEdit(toDos[key].text)}
+            >
               <Text
                 style={{
                   ...styles.toDoText,
@@ -134,6 +164,7 @@ export default function Todo() {
                 <BouncyCheckbox
                   onPress={() => checkToDo(key)}
                   size={24}
+                  isChecked={toDos[key].checked === "true" ? true : false}
                   fillColor="#ffc94f"
                   unfillColor="white"
                   innerIconStyle={{ borderWidth: 4 }}
@@ -144,7 +175,25 @@ export default function Todo() {
                   </Text>
                 </TouchableOpacity>
               </View>
-            </View>
+              <Modal visible={isEditing} animationType="slide">
+                <View style={styles.modalContainer}>
+                  <Text style={styles.editText}>다음과 같이 수정</Text>
+                  <TextInput
+                    style={styles.editInput}
+                    value={editText}
+                    onChangeText={onChangeEditText}
+                  />
+                  <View style={styles.btnBox}>
+                    <TouchableOpacity onPress={() => editToDos(key)}>
+                      <Text style={styles.saveBtn}>저장</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setIsEditing(false)}>
+                      <Text style={styles.cancelBtn}>취소</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </Modal>
+            </TouchableOpacity>
           ) : null
         )}
       </ScrollView>
@@ -194,5 +243,41 @@ const styles = StyleSheet.create({
   checkBox: {
     flexDirection: "row",
     alignItems: "center",
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "black",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  editInput: {
+    backgroundColor: "white",
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 20,
+    width: "85%",
+  },
+  saveBtn: {
+    backgroundColor: "#ffc94f",
+    fontSize: 24,
+    color: "white",
+    padding: 10,
+    borderRadius: 10,
+  },
+  cancelBtn: {
+    backgroundColor: "grey",
+    fontSize: 24,
+    color: "white",
+    padding: 10,
+    borderRadius: 10,
+  },
+  editText: {
+    color: "white",
+    padding: 20,
+    fontSize: 28,
+  },
+  btnBox: {
+    flexDirection: "row",
+    columnGap: 20,
   },
 });
