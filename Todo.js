@@ -26,7 +26,26 @@ export default function Todo() {
 
   useEffect(() => {
     loadToDos();
+    loadHeader();
   }, []);
+
+  useEffect(() => {
+    saveHeader(working);
+  }, [working]); //현재 상태를 기억
+
+  const saveHeader = async (working) => {
+    const hText = working ? "true" : "false";
+    await AsyncStorage.setItem("isWorking", hText);
+  };
+
+  const loadHeader = async () => {
+    try {
+      const h = await AsyncStorage.getItem("isWorking");
+      return h === "false" ? setWorking(false) : setWorking(true);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const saveToDos = async (toSave) => {
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
@@ -39,6 +58,7 @@ export default function Todo() {
     } catch (error) {
       console.log(error);
     }
+    toDos;
   };
   const deleteTodo = async (id) => {
     Alert.alert("해당 ToDo를 삭제합니다.", "정말 삭제하겠습니까?", [
