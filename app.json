@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "minkyuWeather",
-    "slug": "todokyu",
+    "slug": "kyutodo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,20 +13,22 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.munku.native"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.munku.native"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
-        "projectId": "5af27f42-ae93-4aba-8573-0f6f023a0d43"
+        "projectId": "9d5917aa-b23d-4b22-9992-442fa9bfb1b0"
       }
     },
     "owner": "munku"
