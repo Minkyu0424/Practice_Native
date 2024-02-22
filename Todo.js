@@ -6,34 +6,59 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
+  Alert,
 } from "react-native";
 import { theme } from "./color";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-const STORAGE_KEY = "@toDos"
+import { Fontisto } from "@expo/vector-icons";
+
+const STORAGE_KEY = "@toDos";
 
 export default function Todo() {
   const [working, setWorking] = useState(true);
   const [text, setText] = useState("");
   const [toDos, setToDos] = useState({});
+
   const travel = () => setWorking(false);
   const work = () => setWorking(true);
   const onChangeText = (e) => setText(e);
-  useEffect(()=>{
-    loadToDos()
-  })
+
+  useEffect(() => {
+    loadToDos();
+  }, []);
+
   const saveToDos = async (toSave) => {
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
   };
-  const loadToDos = async ()=>{
-    const s =await AsyncStorage.getItem(STORAGE_KEY);
-    setToDos(JSON.parse(s));
-  }
+
+  const loadToDos = async () => {
+    try {
+      const s = await AsyncStorage.getItem(STORAGE_KEY);
+      setToDos(JSON.parse(s));
+    } catch {
+      console.log(e);
+    }
+  };
+  const deleteTodo = async (id) => {
+    Alert.alert("해당 ToDo를 삭제합니다.", "정말 삭제하겠습니까?", [
+      { text: "아니요" },
+      {
+        text: "네",
+        onPress: () => {
+          const newToDos = { ...toDos };
+          delete newToDos[id];
+          setToDos(newToDos);
+          saveToDos(newToDos);
+        },
+      },
+    ]);
+  };
+
   const addToDo = async () => {
     if (text === "") {
       return;
     }
-    
     const newToDos = { ...toDos, [Date.now()]: { text, working } };
     setToDos(newToDos);
     await saveToDos(newToDos);
@@ -70,6 +95,11 @@ export default function Todo() {
           toDos[key].working === working ? (
             <View style={styles.toDo} key={key}>
               <Text style={styles.toDoText}>{toDos[key].text}</Text>
+              <TouchableOpacity onPress={() => deleteTodo(key)}>
+                <Text>
+                  <Fontisto name="trash" size={18} color={"black"} />
+                </Text>
+              </TouchableOpacity>
             </View>
           ) : null
         )}
@@ -103,11 +133,14 @@ const styles = StyleSheet.create({
   },
   toDo: {
     backgroundColor: theme.grey,
+    flexDirection: "row",
+    alignItems:"center",
     marginBottom: 10,
     paddingVertical: 20,
     paddingHorizontal: 40,
     borderRadius: 15,
     color: "white",
+    justifyContent: "space-between",
   },
   toDoText: {
     fontSize: 20,
