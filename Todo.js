@@ -35,9 +35,9 @@ export default function Todo() {
   const loadToDos = async () => {
     try {
       const s = await AsyncStorage.getItem(STORAGE_KEY);
-      setToDos(JSON.parse(s));
-    } catch {
-      console.log(e);
+      return s != null ? setToDos(JSON.parse(s)) : null;
+    } catch (error) {
+      console.log(error);
     }
   };
   const deleteTodo = async (id) => {
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
   toDo: {
     backgroundColor: theme.grey,
     flexDirection: "row",
-    alignItems:"center",
+    alignItems: "center",
     marginBottom: 10,
     paddingVertical: 20,
     paddingHorizontal: 40,
